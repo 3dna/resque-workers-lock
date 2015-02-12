@@ -24,6 +24,10 @@ module Resque
           "#{name}-#{args.to_s}"
         end
 
+        def requeue_if_locked?
+          true
+        end
+
         def get_lock_workers(*args)
           lock_result = lock_workers(*args)
 
@@ -53,7 +57,7 @@ module Resque
               end
             else
               sleep(requeue_perform_delay)
-              Resque.enqueue(self, *args)
+              Resque.enqueue(self, *args) if requeue_if_locked?
               raise Resque::Job::DontPerform
             end
           end
